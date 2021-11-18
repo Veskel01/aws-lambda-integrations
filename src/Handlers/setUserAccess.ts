@@ -14,7 +14,7 @@ import { UserAccessRequestBody } from './Types';
 import { ProxyHandler } from './Types';
 import cookiesExtractor from 'src/Helpers/cookieExtractor';
 
-export const handler: ProxyHandler = async (event, context, callback) => {
+export const handler: ProxyHandler = async (event) => {
   const path = event.path;
 
   const appContext = await NestFactory.createApplicationContext(AppModule);

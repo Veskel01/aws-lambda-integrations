@@ -1,3 +1,7 @@
+export const enum SummaryModuleProviders {
+  SUMMARY_SERVICE = 'summary_service',
+}
+
 export type MentorsDataType = {
   name: string;
   numberOfStudents: number;
