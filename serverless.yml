@@ -1,0 +1,82 @@
+service: aws-localhost-group
+
+plugins:
+  - serverless-plugin-optimize
+  - serverless-offline
+  - serverless-dotenv-plugin
+  - serverless-deployment-bucket
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${file(./aws.config.json):STAGE}
+  region: ${file(./aws.config.json):REGION}
+  stackName: integration
+  profile: localhost-integration
+  lambdaHashingVersion: 20201221
+  deploymentBucket:
+    name: payment-crm-integration-bucket
+    blockPublicAccess: true
+
+functions:
+  payment-handler:
+    handler: dist/Handlers/payment.handler
+    timeout: 30
+    events:
+      - http:
+          path: /payment
+          method: POST
+
+  payment-summary-handler:
+    handler: dist/Handlers/summary.handler
+    events:
+      - http:
+          path: /summary
+          method: GET
+          cors:
+            origin: '*'
+
+  access-handler:
+    handler: dist/Handlers/setUserAccess.handler
+    events:
+      - http:
+          path: /user-access
+          method: POST
+          cors:
+            origin: ${file(./aws.config.json):AMPLIFY_URL}
+            allowCredentials: true
+
+  login-handler:
+    handler: dist/Handlers/login.handler
+    events:
+      - http:
+          path: /login
+          method: POST
+          cors:
+            origin: ${file(./aws.config.json):AMPLIFY_URL}
+            allowCredentials: true
+
+  refresh-token-handler:
+    handler: dist/Handlers/refreshToken.refreshTokenHandler
+    events:
+      - http:
+          path: /refresh
+          method: GET
+          cors:
+            origin: '*'
+
+  logout-handler:
+    handler: dist/Handlers/logout.logoutHandler
+    events:
+      - http:
+          path: /logout
+          method: POST
+          cors:
+            origin: ${file(./aws.config.json):AMPLIFY_URL}
+            allowCredentials: true
+
+custom:
+  serverless-offline:
+    httpPort: 4000
