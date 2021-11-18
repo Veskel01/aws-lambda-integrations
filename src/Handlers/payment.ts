@@ -1,10 +1,17 @@
+import { HttpStatus } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { PaymentService } from '../Payment/Payment.service';
 import { AppModule } from '../app.module';
-import { PaymentPayload } from './Types';
-import LambdaErrorHandler from 'src/Lambda/LambdaError.handler';
+
+// lambda
+import LambdaResponse from '../Lambda/Lambda.response';
+import LambdaErrorHandler from '../Lambda/LambdaError.handler';
+
+// providers
+import { PaymentService } from '../Payment/Payment.service';
+import { PaymentModuleProviders } from '../Payment/Payment.types';
 
 // types
+import { PaymentPayload } from './Types';
 import { ProxyHandler } from './Types';
 
 export const handler: ProxyHandler = async (event) => {
@@ -14,17 +21,21 @@ export const handler: ProxyHandler = async (event) => {
 
   const appContext = await NestFactory.createApplicationContext(AppModule);
 
-  const paymentService = appContext.get(PaymentService);
+  const paymentService = appContext.get<PaymentService>(
+    PaymentModuleProviders.PAYMENT_SERVICE,
+  );
 
   if (body && httpMethod === 'POST') {
     const { arg: orderID } = JSON.parse(body) as PaymentPayload;
 
     if (orderID) {
       try {
-        return {
-          statusCode: 200,
-          body: JSON.stringify(await paymentService.handlePaymentSave(orderID)),
-        };
+        const response = await paymentService.handlePaymentSave(orderID);
+
+        return LambdaResponse({
+          statusCode: HttpStatus.OK,
+          body: response,
+        });
       } catch (e) {
         return LambdaErrorHandler({
           path,
@@ -33,5 +44,10 @@ export const handler: ProxyHandler = async (event) => {
         });
       }
     }
+    return LambdaErrorHandler({
+      path,
+      message: 'Brak numeru zamówienia',
+      statusCode: HttpStatus.BAD_REQUEST,
+    });
   }
 };

@@ -7,8 +7,17 @@ import { CrmModule } from '../Crm/Crm.module';
 import { DiscordModule } from '../Discord/Discord.module';
 import { RoadmapsModule } from '../Roadmaps/Roadmaps.module';
 
+// types
+import { PaymentModuleProviders } from './Payment.types';
+
 @Module({
   imports: [HttpModule, CrmModule, DiscordModule, RoadmapsModule],
-  providers: [PaymentService],
+  providers: [
+    {
+      provide: PaymentModuleProviders.PAYMENT_SERVICE,
+      useClass: PaymentService,
+    },
+  ],
+  exports: [PaymentModuleProviders.PAYMENT_SERVICE],
 })
 export class PaymentModule {}

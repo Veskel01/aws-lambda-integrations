@@ -45,7 +45,7 @@ export const handler: ProxyHandler = async (event) => {
       authToken,
     });
 
-    const result = await summaryService.handleRequest({
+    const responseWithData = await summaryService.handleRequest({
       accessType: access_type,
     });
 
@@ -53,7 +53,7 @@ export const handler: ProxyHandler = async (event) => {
       statusCode: 200,
       body: {
         isAdmin,
-        ...result,
+        ...responseWithData,
       },
     });
   } catch (e) {
