@@ -7,6 +7,7 @@ import { PaymentModule } from './Payment/Payment.module';
 import { LoginModule } from './Login/Login.module';
 import { SummaryModule } from './Summary/Summary.module';
 import { UserAccessModule } from './UserAccess/UserAccess.module';
+import { DealsModule } from './Deals/Deals.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserAccessModule } from './UserAccess/UserAccess.module';
     PaymentModule,
     SummaryModule,
     UserAccessModule,
+    DealsModule,
     LoginModule,
     ConfigModule.forRoot({
       cache: true,

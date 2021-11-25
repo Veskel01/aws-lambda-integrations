@@ -8,8 +8,6 @@ import sha1 from 'sha1';
 // helpers
 import getFieldIdBasedOnRoadmapID from '../Helpers/GetFieldIdFromRoadmapId';
 
-// modules
-
 // errors
 import ErrorHandler from '../Helpers/Error.handler';
 
@@ -66,7 +64,10 @@ export class CrmService {
     }
   }
 
-  private async crmRequest(endpoint: string, body: Record<string, unknown>) {
+  private async _contactCrmRequest(
+    endpoint: string,
+    body: Record<string, unknown>,
+  ) {
     const initialSettings = await this._getInitialSettings();
 
     try {
@@ -99,7 +100,10 @@ export class CrmService {
       emails: email,
     };
 
-    const { contact } = await this.crmRequest('/Contact/getAll', requestBody);
+    const { contact } = await this._contactCrmRequest(
+      '/Contact/getAll',
+      requestBody,
+    );
 
     return Array.isArray(contact) && contact.length > 0
       ? (contact[0] as unknown as IContact)
@@ -118,7 +122,7 @@ export class CrmService {
     };
 
     try {
-      const { contact: allContacts } = (await this.crmRequest(
+      const { contact: allContacts } = (await this._contactCrmRequest(
         '/Contact/getAll',
         {
           ...requestBody,
@@ -156,7 +160,7 @@ export class CrmService {
       },
     };
 
-    const { contact } = await this.crmRequest('/Contact/addContact', {
+    const { contact } = await this._contactCrmRequest('/Contact/addContact', {
       contact: {
         ...requestBody,
       },
@@ -169,7 +173,7 @@ export class CrmService {
     const requestBody =
       this.crmHelperService.prepareNewStudentRequestBody(createNewStudentDto);
 
-    const { contact } = await this.crmRequest('/Contact/addContact', {
+    const { contact } = await this._contactCrmRequest('/Contact/addContact', {
       contact: {
         ...requestBody,
       },
@@ -208,7 +212,7 @@ export class CrmService {
       return contactEmail && contactEmail.includes('@');
     }
 
-    await this.crmRequest('/Contact/editContact', {
+    await this._contactCrmRequest('/Contact/editContact', {
       contact: {
         id,
         firstname: firstName,
@@ -221,5 +225,20 @@ export class CrmService {
         },
       },
     });
+  }
+
+  public async getAllDeals() {
+    const initialSettings = await this._getInitialSettings();
+
+    const test = await firstValueFrom(
+      this.http.post(`${this._crmApiUrl}/Deal/getAll`, {
+        ...initialSettings,
+        created: {
+          from: '2021-01-01 12:00',
+          to: '2100-01-01 12:00',
+        },
+      }),
+    );
+    console.log(test.data.data.deal);
   }
 }

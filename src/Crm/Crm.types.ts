@@ -165,3 +165,9 @@ export type HandleBoughtType = {
   contact: IContact;
   productID: number;
 };
+
+// TODO deal type
+
+export type DealType = {
+  id: string;
+};

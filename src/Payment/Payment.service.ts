@@ -214,7 +214,8 @@ export class PaymentService {
   private async _handleRoadmapSaveIntoDynamo(
     roadmapData: HandleRoadmapSaveType,
   ) {
+    console.log(roadmapData);
     // TODO poprawic i pamiętać o tym, że ktoś może kupić roadmapę pare razy
-    await this.roadmapService.handleRoadmapSave(roadmapData);
+    //await this.roadmapService.handleRoadmapSave(roadmapData);
   }
 }
