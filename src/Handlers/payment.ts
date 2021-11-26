@@ -14,7 +14,7 @@ import { PaymentModuleProviders } from '../Payment/Payment.types';
 import { PaymentPayload } from './Types';
 import { ProxyHandler } from './Types';
 
-export const handler: ProxyHandler = async (event) => {
+export const handler: ProxyHandler = async (event, context, callback) => {
   const { body, httpMethod, requestContext } = event;
 
   const { path } = requestContext;
@@ -32,10 +32,18 @@ export const handler: ProxyHandler = async (event) => {
       try {
         const response = await paymentService.handlePaymentSave(orderID);
 
-        return LambdaResponse({
-          statusCode: HttpStatus.OK,
-          body: response,
-        });
+        callback(
+          null,
+          LambdaResponse({
+            statusCode: HttpStatus.OK,
+            body: response,
+          }),
+        );
+
+        // return LambdaResponse({
+        //   statusCode: HttpStatus.OK,
+        //   body: response,
+        // });
       } catch (e) {
         return LambdaErrorHandler({
           path,
