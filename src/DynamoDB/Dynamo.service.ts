@@ -98,6 +98,7 @@ export class DynamoService {
         .promise();
       return Attributes as T;
     } catch (e) {
+      console.log(e);
       throw new DynamoDbException();
     }
   }

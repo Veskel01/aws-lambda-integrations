@@ -1,81 +1,32 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { from, map, of, mergeMap, BehaviorSubject } from 'rxjs';
 
 // imports
-import { DynamoModuleProviders } from '../DynamoDB/Dynamo.types';
-import { DynamoService } from '../DynamoDB/Dynamo.service';
-
-// types
-import {
-  HandleRoadmapSaveType,
-  RoadmapTableDataType,
-  RoadmapOwnerDataUpdateType,
-} from '../Roadmaps/Roadmaps.types';
-
-// errors
-import { DynamoDbException } from '../CustomErrors/Dynamo.errors';
+import { WooCommService } from '../Woocommerce/WooComm.service';
+import { WooCommProviders } from '../Woocommerce/WooComm.types';
 
 @Injectable()
 export class RoadmapsService {
-  private readonly tableName: string = 'roadmaps_data';
-
   constructor(
-    @Inject(DynamoModuleProviders.DYNAMO_SERVICE)
-    private readonly dynamoService: DynamoService,
+    @Inject(WooCommProviders.MAIN_SERVICE)
+    private readonly wooCommService: WooCommService,
   ) {}
 
-  private async checkIfRoadmapOwnerExist(githubName: string) {
-    const { response } = await this.dynamoService.get({
-      tableName: this.tableName,
-      primaryKey: {
-        github_name: githubName,
-      },
-    });
-    if (response) return true;
-    return false;
-  }
+  public productList$ = new BehaviorSubject<any>([]);
 
-  async handleRoadmapOwnerProductUpdate({
-    github_name,
-    product,
-  }: RoadmapOwnerDataUpdateType) {
-    // update DB
-  }
-
-  async handleRoadmapSave({
-    github_name,
-    productData,
-    couponDetails,
-    userDetails,
-  }: HandleRoadmapSaveType) {
-    const { date_completed, name, ...restProductData } = productData;
-
-    try {
-      // TODO
-      await this.dynamoService.insert<RoadmapTableDataType>({
-        primaryKey: {
-          github_name,
-        },
-        tableName: this.tableName,
-        data: {
-          purcharsed_products: [{ [name]: { ...restProductData } }],
-          user_data: {
-            ...userDetails,
-          },
-          used_coupons: couponDetails
-            ? [
-                {
-                  [couponDetails.code]: couponDetails.discount,
-                },
-              ]
-            : null,
-          other_details: {
-            date_of_bought: date_completed,
-          },
-        },
-      });
-    } catch (e) {
-      console.log(e);
-      throw new DynamoDbException();
-    }
+  test() {
+    // TODO
+    from(
+      this.wooCommService.getListOfProductsFromGivenMonths({
+        monthsBack: 3,
+        productID: 1784,
+        status: 'completed',
+        per_page: 100,
+      }),
+    ).pipe(
+      map((orders) =>
+        from(orders).pipe(map(({ line_items }) => line_items[0])),
+      ),
+    );
   }
 }

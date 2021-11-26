@@ -144,7 +144,7 @@ export class CrmService {
     email,
     lastName,
     productID,
-  }: ICreateRoadmapOwner) {
+  }: ICreateRoadmapOwner): Promise<{ id: string }> {
     const { githubFieldID } = additionalFieldsIDConfig;
 
     const productFieldID = getFieldIdBasedOnRoadmapID(productID);
@@ -166,7 +166,7 @@ export class CrmService {
       },
     });
 
-    return contact;
+    return contact as { id: string };
   }
 
   public async createNewStudent(createNewStudentDto: ICreateNewStudent) {

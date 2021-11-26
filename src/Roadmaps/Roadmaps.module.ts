@@ -1,22 +1,24 @@
 import { Module } from '@nestjs/common';
 
 // imports
-import { DynamoModule } from '../DynamoDB/Dynamo.module';
+import { WooCommModule } from '../Woocommerce/WooComm.module';
+import { RoadmapsController } from './Roadmaps.controller';
 
-// service
+// providers
 import { RoadmapsService } from './Roadmaps.service';
 
 // types
 import { RoadmapsModuleProviders } from './Roadmaps.types';
 
 @Module({
-  imports: [DynamoModule],
+  imports: [WooCommModule],
+  controllers: [RoadmapsController],
   providers: [
     {
-      provide: RoadmapsModuleProviders.ROADMAPS_SERVICE,
+      provide: RoadmapsModuleProviders.MAIN_SERVICE,
       useClass: RoadmapsService,
     },
   ],
-  exports: [RoadmapsModuleProviders.ROADMAPS_SERVICE],
+  exports: [RoadmapsModuleProviders.MAIN_SERVICE],
 })
 export class RoadmapsModule {}

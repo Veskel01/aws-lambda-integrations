@@ -11,6 +11,6 @@ export class DealsController {
 
   @Get()
   async test() {
-    await this.dealsService.test();
+    return await this.dealsService.test();
   }
 }

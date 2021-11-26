@@ -1,5 +1,5 @@
 import { GetProductType } from '../Helpers/GetProductType';
-import { ISingleOrder } from '../Payment/Payment.types';
+import { ISingleOrder } from '../Woocommerce/WooComm.types';
 
 export interface ICrmResponse {
   data: {

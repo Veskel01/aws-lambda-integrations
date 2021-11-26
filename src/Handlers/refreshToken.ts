@@ -1,12 +1,14 @@
 // imports
 import { HttpStatus } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import Cookies from 'universal-cookie';
 
 // modules
 import { AppModule } from '../app.module';
 
 import { ProxyHandler } from './Types';
+
+// helpers
+import cookieExtractor from '../Helpers/cookieExtractor';
 
 // lambda
 import LambdaErrorHandler from '../Lambda/LambdaError.handler';
@@ -29,11 +31,7 @@ export const refreshTokenHandler: ProxyHandler = async (
     AuthModuleProviders.AUTH_SERVICE,
   );
 
-  const { Cookie: requestCookies } = event.headers as { Cookie: string };
-
-  const parsedCookies = new Cookies(requestCookies);
-
-  const refreshToken: string | undefined = parsedCookies.get('Refresh');
+  const refreshToken = cookieExtractor(event, 'Refresh');
 
   try {
     const { accessCookie } = await authService.verifyRefreshToken({

@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie';
 const cookiesExtractor = (
   event: APIGatewayProxyEvent,
   cookieName: string,
-): string => {
+): string | undefined => {
   const { Cookie: requestCookies } = event.headers as { Cookie: string };
 
   const parsedCookies = new Cookies(requestCookies);

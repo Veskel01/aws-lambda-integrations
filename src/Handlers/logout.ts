@@ -1,7 +1,6 @@
 // imports
 import { NestFactory } from '@nestjs/core';
 import { HttpStatus } from '@nestjs/common';
-import Cookies from 'universal-cookie';
 
 // types
 import { LoginModuleProviders } from '../Login/Login.types';
@@ -20,6 +19,9 @@ import { AppModule } from '../app.module';
 import LambdaResponse from '../Lambda/Lambda.response';
 import LambdaErrorHandler from '../Lambda/LambdaError.handler';
 
+// helpers
+import cookiesExtractor from '../Helpers/cookieExtractor';
+
 export const logoutHandler: ProxyHandler = async (event, context, callback) => {
   const path = event.path;
 
@@ -29,11 +31,7 @@ export const logoutHandler: ProxyHandler = async (event, context, callback) => {
     LoginModuleProviders.LOGIN_SERVICE,
   );
 
-  const { Cookie: requestCookies } = event.headers as { Cookie: string };
-
-  const parsedCookies = new Cookies(requestCookies);
-
-  const authCookie: string | undefined = parsedCookies.get('Authentication');
+  const authCookie = cookiesExtractor(event, 'Authentication');
 
   try {
     if (!authCookie) {

@@ -14,7 +14,7 @@ provider:
   stage: ${file(./aws.config.json):STAGE}
   region: ${file(./aws.config.json):REGION}
   stackName: integration
-  profile: localhost-integration
+  profile: localhost-group-integrations
   lambdaHashingVersion: 20201221
   deploymentBucket:
     name: payment-crm-integration-bucket
@@ -23,7 +23,6 @@ provider:
 functions:
   payment-handler:
     handler: dist/Handlers/payment.handler
-    timeout: 30
     events:
       - http:
           path: /payment

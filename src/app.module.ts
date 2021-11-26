@@ -8,6 +8,7 @@ import { LoginModule } from './Login/Login.module';
 import { SummaryModule } from './Summary/Summary.module';
 import { UserAccessModule } from './UserAccess/UserAccess.module';
 import { DealsModule } from './Deals/Deals.module';
+import { RoadmapsModule } from './Roadmaps/Roadmaps.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DealsModule } from './Deals/Deals.module';
     UserAccessModule,
     DealsModule,
     LoginModule,
+    RoadmapsModule,
     ConfigModule.forRoot({
       cache: true,
       isGlobal: true,

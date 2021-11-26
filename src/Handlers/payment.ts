@@ -14,8 +14,12 @@ import { PaymentModuleProviders } from '../Payment/Payment.types';
 import { PaymentPayload } from './Types';
 import { ProxyHandler } from './Types';
 
+// Helpers
+import validate from '../Helpers/validator';
+import { PaymentDto } from '../models/Validators/Payment.validator';
+
 export const handler: ProxyHandler = async (event, context, callback) => {
-  const { body, httpMethod, requestContext } = event;
+  const { body, requestContext } = event;
 
   const { path } = requestContext;
 
@@ -25,37 +29,27 @@ export const handler: ProxyHandler = async (event, context, callback) => {
     PaymentModuleProviders.PAYMENT_SERVICE,
   );
 
-  if (body && httpMethod === 'POST') {
-    const { arg: orderID } = JSON.parse(body) as PaymentPayload;
+  try {
+    const parsedBody = JSON.parse(body) as PaymentPayload;
 
-    if (orderID) {
-      try {
-        const response = await paymentService.handlePaymentSave(orderID);
+    await validate(PaymentDto, parsedBody);
 
-        callback(
-          null,
-          LambdaResponse({
-            statusCode: HttpStatus.OK,
-            body: response,
-          }),
-        );
+    const { arg: orderID } = parsedBody;
 
-        // return LambdaResponse({
-        //   statusCode: HttpStatus.OK,
-        //   body: response,
-        // });
-      } catch (e) {
-        return LambdaErrorHandler({
-          path,
-          message: e.message,
-          statusCode: e.status,
-        });
-      }
-    }
+    const response = await paymentService.handlePaymentSave(orderID);
+
+    callback(
+      null,
+      LambdaResponse({
+        statusCode: HttpStatus.OK,
+        body: response,
+      }),
+    );
+  } catch (e) {
     return LambdaErrorHandler({
       path,
-      message: 'Brak numeru zamówienia',
-      statusCode: HttpStatus.BAD_REQUEST,
+      message: e.message,
+      statusCode: e.status,
     });
   }
 };

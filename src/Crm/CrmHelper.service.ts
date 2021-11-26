@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Product } from '../Payment/Payment.types';
+import { Product } from '../Woocommerce/WooComm.types';
 import additionalFieldsConfig from '../utils/AdditionalFieldsId.config';
 import { ICreateNewStudent, PrepareBoughtFieldsType } from './Crm.types';
 import paymentFieldsIdConfig from '../utils/PaymentsFieldsId.config';

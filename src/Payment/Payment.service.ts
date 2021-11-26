@@ -1,18 +1,16 @@
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
 import { DateTime } from 'luxon';
 
 // services
-import { RoadmapsModuleProviders } from '../Roadmaps/Roadmaps.types';
-import { RoadmapsService } from '../Roadmaps/Roadmaps.service';
 import { DiscordService } from '../Discord/Discord.service';
 import { CrmService } from '../Crm/Crm.service';
+import { WooCommService } from '../Woocommerce/WooComm.service';
+import { WooCommProviders } from '../Woocommerce/WooComm.types';
 
 // types
-import { HandleRoadmapSaveType } from '../Roadmaps/Roadmaps.types';
-import { ISingleOrder } from './Payment.types';
+import { ISingleOrder } from '../Woocommerce/WooComm.types';
 import { IContact } from '../Crm/Crm.types';
 
 // errors
@@ -25,61 +23,30 @@ import getProductType from '../Helpers/GetProductType';
 export class PaymentService {
   private logger: Logger = new Logger(PaymentService.name);
 
-  private readonly _wooCommClient: WooCommerceRestApi;
-
   constructor(
-    @Inject(RoadmapsModuleProviders.ROADMAPS_SERVICE)
-    private readonly roadmapService: RoadmapsService,
+    @Inject(WooCommProviders.MAIN_SERVICE)
+    private readonly wooCommService: WooCommService,
     private readonly configService: ConfigService,
     private readonly crmService: CrmService,
     private readonly discordService: DiscordService,
-  ) {
-    const wooCommerceUrl = configService.get('WOOCOMMERCE_API_URL');
-
-    const consumerKey = configService.get('WOOCOMMERCE_CONSUMER_KEY');
-
-    const consumerSecret = configService.get('WOOCOMMERCE_CONSUMER_SECRET');
-
-    this._wooCommClient = new WooCommerceRestApi({
-      url: wooCommerceUrl,
-      consumerKey,
-      consumerSecret,
-      version: 'wc/v3',
-    });
-  }
+  ) {}
 
   async handlePaymentSave(orderID: number) {
-    const singleOrder = await this._getSingleOrderData(orderID);
+    const { data: singleOrder } = await this.wooCommService.getSingleOrder(
+      orderID,
+    );
 
     const {
       billing: { email },
     } = singleOrder;
 
-    const contact = await this.crmService.getSingleContact({
-      email,
-    });
+    const contact = await this.crmService.getSingleContact({ email });
 
     if (!contact) {
       return await this._createNewContact(singleOrder);
     }
 
     return await this._handleCreatedContact(singleOrder, contact);
-  }
-
-  private async _getSingleOrderData(orderID: number): Promise<ISingleOrder> {
-    try {
-      const res = (await this._wooCommClient.get(`orders/${orderID}`)) as {
-        data: ISingleOrder;
-      };
-
-      return res.data;
-    } catch (e) {
-      this.logger.warn(e.response.data);
-      HttpErrorHandler(
-        'Wystąpił błąd podczas łączenia się z Wordpressem',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
   }
 
   private async _createNewContact(order: ISingleOrder) {
@@ -102,26 +69,14 @@ export class PaymentService {
 
     if (orderType === 'roadmap') {
       try {
-        await this._handleRoadmapSaveIntoDynamo({
-          github_name: githubName,
-          productData: {
-            ...productList[0],
-            currency: order.currency,
-            date_completed: paymentDate,
-          },
-          userDetails: {
-            ...order.billing,
-          },
-          couponDetails: couponDto ? { ...couponDto } : null,
-        });
-        const { id } = (await this.crmService.createNewRoadmapOwner({
+        const { id } = await this.crmService.createNewRoadmapOwner({
           firstName,
           lastName,
           productID: product_id,
           email,
           githubName,
           groupIdForCustomer,
-        })) as { id: string };
+        });
         return await this.discordService.sendDiscordMessage({
           msgType: 'roadmapBought',
           contactID: id,
@@ -167,9 +122,7 @@ export class PaymentService {
     const { id } = contact;
 
     const {
-      customer_note: github_name,
       line_items: { '0': product },
-      coupon_lines: { '0': couponDto },
     } = order;
 
     const { product_id } = product;
@@ -179,23 +132,6 @@ export class PaymentService {
     if (productType === 'unknown') {
       HttpErrorHandler('Nieznany produkt', HttpStatus.NOT_FOUND);
       return null;
-    }
-
-    if (productType === 'roadmap') {
-      await this._handleRoadmapSaveIntoDynamo({
-        github_name,
-        productData: {
-          ...product,
-          currency: order.currency,
-          date_completed: order.date_completed
-            ? order.date_completed
-            : DateTime.local().toISO(),
-        },
-        userDetails: {
-          ...order.billing,
-        },
-        couponDetails: couponDto ? { ...couponDto } : null,
-      });
     }
 
     await this.crmService.handleBought({
@@ -209,13 +145,5 @@ export class PaymentService {
       order,
       msgType: productType === 'roadmap' ? 'roadmapBought' : 'mentoringReneval',
     });
-  }
-
-  private async _handleRoadmapSaveIntoDynamo(
-    roadmapData: HandleRoadmapSaveType,
-  ) {
-    console.log(roadmapData);
-    // TODO poprawic i pamiętać o tym, że ktoś może kupić roadmapę pare razy
-    //await this.roadmapService.handleRoadmapSave(roadmapData);
   }
 }

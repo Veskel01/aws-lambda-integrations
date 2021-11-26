@@ -1,4 +1,4 @@
-import { ISingleOrder } from '../Payment/Payment.types';
+import { ISingleOrder } from '../Woocommerce/WooComm.types';
 
 export type CouponType = {
   id: number;

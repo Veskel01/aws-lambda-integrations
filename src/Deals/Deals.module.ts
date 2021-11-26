@@ -10,8 +10,11 @@ import { DealsService } from './Deals.service';
 // types
 import { DealsModuleProviders } from './Deals.types';
 
+// modules
+import { WooCommModule } from '../Woocommerce/WooComm.module';
 @Module({
-  imports: [CrmModule],
+  imports: [CrmModule, WooCommModule],
+  controllers: [DealsController],
   providers: [
     {
       provide: DealsModuleProviders.DEALS_SERVICE,

@@ -1,13 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 // imports
+import { WooCommService } from '../Woocommerce/WooComm.service';
 import { CrmService } from '../Crm/Crm.service';
+import { WooCommProviders } from '../Woocommerce/WooComm.types';
 
 @Injectable()
 export class DealsService {
-  constructor(private readonly crmService: CrmService) {}
+  constructor(
+    @Inject(WooCommProviders.MAIN_SERVICE)
+    private readonly wooCommService: WooCommService,
+  ) {}
 
   async test() {
-    await this.crmService.getAllDeals();
+    return 'Hello World';
   }
 }
