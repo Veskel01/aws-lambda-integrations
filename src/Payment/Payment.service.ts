@@ -139,6 +139,7 @@ export class PaymentService {
       order,
       productID: product_id,
       productType,
+      withEmail: !!contact.email,
     });
     return await this.discordService.sendDiscordMessage({
       contactID: id,

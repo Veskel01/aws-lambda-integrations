@@ -25,6 +25,9 @@ import { DynamoModule } from '../DynamoDB/Dynamo.module';
       useClass: GithubService,
     },
   ],
-  exports: [LoginModuleProviders.LOGIN_SERVICE],
+  exports: [
+    LoginModuleProviders.LOGIN_SERVICE,
+    LoginModuleProviders.GITHUB_SERVICE,
+  ],
 })
 export class LoginModule {}

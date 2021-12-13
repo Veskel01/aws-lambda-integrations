@@ -19,6 +19,8 @@ import { DynamoService } from '../DynamoDB/Dynamo.service';
 // imports
 import { AuthModuleProviders } from '../Authentication/Authentication.types';
 import { AuthenticationService } from '../Authentication/Authentication.service';
+import { LoginModuleProviders } from '../Login/Login.types';
+import { GithubService } from '../Login/Github.service';
 
 @Injectable()
 export class UserAccessService {
@@ -29,6 +31,8 @@ export class UserAccessService {
     private readonly authService: AuthenticationService,
     @Inject(DynamoModuleProviders.DYNAMO_SERVICE)
     private readonly dynamoService: DynamoService,
+    @Inject(LoginModuleProviders.GITHUB_SERVICE)
+    private readonly githubService: GithubService,
   ) {}
 
   private async checkIfUserExist({ githubName }: { githubName: string }) {
@@ -55,22 +59,25 @@ export class UserAccessService {
     isAdmin: isAdminProp,
     accessToken,
   }: AddUserAccess) {
-    const userID = uuid();
-
-    const { isAdmin } = await this.authService.verifyAuthentication({
-      authToken: accessToken,
-    });
-
-    if (!isAdmin) {
-      throw new UserInsufficientPermissionsException();
-    }
-
-    const accessType: AccessKeysType[] =
-      accessKeys.indexOf('full_access') !== -1
-        ? ['full_access']
-        : [...accessKeys];
-
     try {
+      const userID = uuid();
+
+      const [{ isAdmin }] = await Promise.all([
+        this.authService.verifyAuthentication({
+          authToken: accessToken,
+        }),
+        this.githubService.checkIfGithubUserExist(githubName),
+      ]);
+
+      if (!isAdmin) {
+        throw new UserInsufficientPermissionsException();
+      }
+
+      const accessType: AccessKeysType[] =
+        accessKeys.indexOf('full_access') !== -1
+          ? ['full_access']
+          : [...accessKeys];
+
       await this.checkIfUserExist({
         githubName,
       });

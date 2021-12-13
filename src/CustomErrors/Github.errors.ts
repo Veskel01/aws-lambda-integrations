@@ -17,3 +17,9 @@ export class GithubBadVerificationCodeException extends HttpException {
     );
   }
 }
+
+export class GithubUserNotExistException extends HttpException {
+  constructor() {
+    super('Podane konto Github nie istnieje', HttpStatus.BAD_REQUEST);
+  }
+}

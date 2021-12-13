@@ -75,6 +75,14 @@ functions:
           cors:
             origin: ${file(./aws.config.json):AMPLIFY_URL}
             allowCredentials: true
+  roadmaps-handler:
+    handler: dist/Handlers/roadmaps.handler
+    events:
+      - http:
+          path: /roadmaps
+          method: GET
+          cors:
+            origin: '*'
 
 custom:
   serverless-offline:

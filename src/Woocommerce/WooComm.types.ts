@@ -1,13 +1,16 @@
+import { ProductsIDS } from '../Helpers/Helpers.types';
+
 export const enum WooCommProviders {
   MAIN_SERVICE = 'woo_coom_main_service',
 }
+
 export type WooCommerceOrder = {
   data: ISingleOrder;
 };
 
 export type GetListOfOrdersType = {
   monthsBack: number;
-  productID: number;
+  productID: ProductsIDS | ProductsIDS[];
   status:
     | 'any'
     | 'pending'

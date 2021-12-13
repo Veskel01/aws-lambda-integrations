@@ -1,9 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { from, map, of, mergeMap, BehaviorSubject } from 'rxjs';
-
+import { DateTime } from 'luxon';
 // imports
 import { WooCommService } from '../Woocommerce/WooComm.service';
-import { WooCommProviders } from '../Woocommerce/WooComm.types';
+import {
+  GetListOfOrdersType,
+  ISingleOrder,
+  WooCommProviders,
+} from '../Woocommerce/WooComm.types';
+import { PurcharsedRoadmapsType } from './Roadmaps.types';
 
 @Injectable()
 export class RoadmapsService {
@@ -12,21 +16,67 @@ export class RoadmapsService {
     private readonly wooCommService: WooCommService,
   ) {}
 
-  public productList$ = new BehaviorSubject<any>([]);
+  private prepareValueToReturn(orders: ISingleOrder[]) {
+    return orders.reduce((acc, curr) => {
+      const {
+        line_items,
+        billing: { first_name, email, last_name },
+        currency,
+        date_completed,
+        currency_symbol,
+      } = curr;
 
-  test() {
-    // TODO
-    from(
-      this.wooCommService.getListOfProductsFromGivenMonths({
-        monthsBack: 3,
-        productID: 1784,
-        status: 'completed',
-        per_page: 100,
-      }),
-    ).pipe(
-      map((orders) =>
-        from(orders).pipe(map(({ line_items }) => line_items[0])),
-      ),
+      const singleProduct = line_items.map(
+        ({ total, quantity, product_id, name }) => ({
+          name,
+          total: +total,
+          quantity,
+          product_id,
+        }),
+      );
+
+      const monthsDiff: number =
+        DateTime.now().month -
+        DateTime.fromISO(date_completed || DateTime.now().toISO()).month;
+
+      acc.push({
+        first_name,
+        last_name,
+        email,
+        currency,
+        monthsDiff,
+        currency_symbol,
+        boughtDate: date_completed,
+        products: singleProduct,
+      });
+      return acc;
+    }, [] as PurcharsedRoadmapsType[]);
+  }
+
+  async getListOfPurcharsedRoadmaps(
+    args: GetListOfOrdersType,
+  ): Promise<PurcharsedRoadmapsType[]> {
+    if (Array.isArray(args.productID)) {
+      const { productID, ...rest } = args;
+
+      const preparedRequestBody = productID.map((productID) => ({
+        productID,
+        ...rest,
+      }));
+
+      const responses = await Promise.all(
+        preparedRequestBody.map((requestData) =>
+          this.wooCommService.getListOfProductsFromGivenMonths(requestData),
+        ),
+      );
+
+      return this.prepareValueToReturn(responses.flat(1));
+    }
+
+    const orders = await this.wooCommService.getListOfProductsFromGivenMonths(
+      args,
     );
+
+    return this.prepareValueToReturn(orders);
   }
 }

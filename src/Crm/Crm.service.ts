@@ -187,6 +187,7 @@ export class CrmService {
     order,
     productID,
     productType,
+    withEmail,
   }: HandleBoughtType) {
     const {
       customer_note: githubName,
@@ -217,7 +218,7 @@ export class CrmService {
         id,
         firstname: firstName,
         lastname: lastName,
-        emails: !detectEmail() ? [email] : null,
+        emails: detectEmail() && withEmail ? [email] : null,
         groups: [groupIdForCustomer],
         dataset: {
           [githubFieldID]: githubName,

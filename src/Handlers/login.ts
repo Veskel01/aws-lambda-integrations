@@ -5,7 +5,7 @@ import { ProxyHandler } from './Types';
 
 // types
 import { LoginRequest, LoginModuleProviders } from '../Login/Login.types';
-import { LoginDto } from '../models/Validators/Login.validator';
+import { LoginDto } from '../Models/Validators/Login.validator';
 
 // modules
 import { AppModule } from '../app.module';

@@ -14,7 +14,7 @@ import { UserAccessRequestBody } from './Types';
 import { ProxyHandler } from './Types';
 import cookiesExtractor from '../Helpers/cookieExtractor';
 import validate from '../Helpers/validator';
-import { UserAccessDto } from '../models/Validators/UserAccess.validator';
+import { UserAccessDto } from '../Models/Validators/UserAccess.validator';
 
 export const handler: ProxyHandler = async (event, context, callback) => {
   const path = event.path;

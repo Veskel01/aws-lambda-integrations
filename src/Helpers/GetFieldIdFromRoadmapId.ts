@@ -1,4 +1,5 @@
 import productFieldsIdConfig from '../utils/ProductFieldsId.config';
+import { ProductsIDS } from './Helpers.types';
 
 // Rozwiązania roadmapy = 1784
 // Wszystkie roadmapy z rozwiazaniami = 1783
@@ -7,7 +8,9 @@ import productFieldsIdConfig from '../utils/ProductFieldsId.config';
 // Ścieżka rozwoju Backend TS = 1742
 // Ścieżka rozwoju Portfolio Builder = 1743
 
-const getFieldIdBasedOnRoadmapID = (productID: number): string | string[] => {
+const getFieldIdBasedOnRoadmapID = (
+  productID: ProductsIDS,
+): string | string[] => {
   const {
     jsTsRoadmapFieldID,
     backendRoadmapFieldID,

@@ -16,7 +16,7 @@ import { ProxyHandler } from './Types';
 
 // Helpers
 import validate from '../Helpers/validator';
-import { PaymentDto } from '../models/Validators/Payment.validator';
+import { PaymentDto } from '../Models/Validators/Payment.validator';
 
 export const handler: ProxyHandler = async (event, context, callback) => {
   const { body, requestContext } = event;

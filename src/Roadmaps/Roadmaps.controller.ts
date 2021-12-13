@@ -10,7 +10,12 @@ export class RoadmapsController {
   ) {}
 
   @Get()
-  test() {
-    return this.roadmapService.test();
+  async test() {
+    return await this.roadmapService.getListOfPurcharsedRoadmaps({
+      monthsBack: 3,
+      per_page: 100,
+      productID: [1783, 1740, 1741, 1742, 1743],
+      status: 'completed',
+    });
   }
 }

@@ -4,11 +4,13 @@ import { Injectable } from '@nestjs/common';
 // utils
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { checkIfGithubUserExistTypeGuard } from '../TypeGuards/Github.typeGuards';
 
 // errors
 import {
   GithubBadVerificationCodeException,
   GithubRequestException,
+  GithubUserNotExistException,
 } from '../CustomErrors/Github.errors';
 
 // types
@@ -16,6 +18,7 @@ import {
   GithubTokenResponse,
   GithubErrorResponse,
   GithubDataResponse,
+  IGithubUserExistResponse,
 } from './Github.types';
 
 @Injectable()
@@ -46,6 +49,28 @@ export class GithubService {
       const { error } = e.data as GithubErrorResponse;
       if (error === 'bad_verification_code') {
         throw new GithubBadVerificationCodeException();
+      }
+      throw new GithubRequestException();
+    }
+  }
+
+  public async checkIfGithubUserExist(githubName: string) {
+    try {
+      const { data } = await firstValueFrom(
+        this.http.get<IGithubUserExistResponse | { message: string }>(
+          `https://api.github.com/users/${githubName}`,
+        ),
+      );
+
+      const isGithubUser = checkIfGithubUserExistTypeGuard(data);
+
+      if (isGithubUser) {
+        return true;
+      }
+      throw new GithubUserNotExistException();
+    } catch (e) {
+      if (e instanceof GithubUserNotExistException) {
+        throw e;
       }
       throw new GithubRequestException();
     }

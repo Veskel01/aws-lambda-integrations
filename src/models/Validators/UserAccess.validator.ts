@@ -1,4 +1,10 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 // types
 import { AccessKeysType } from '../../UserAccess/UserAccess.types';
@@ -12,6 +18,7 @@ export class UserAccessDto {
   @IsArray()
   @OneOfAccessKey()
   accessKeys: AccessKeysType[];
+  @IsOptional()
   @IsBoolean()
   @IsNotEmpty()
   isAdmin: boolean;

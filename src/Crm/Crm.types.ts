@@ -164,6 +164,7 @@ export type HandleBoughtType = {
   order: ISingleOrder;
   contact: IContact;
   productID: number;
+  withEmail: boolean;
 };
 
 // TODO deal type
